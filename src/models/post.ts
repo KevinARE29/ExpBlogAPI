@@ -1,24 +1,17 @@
 import mongoose, { Schema } from 'mongoose';
-import { type } from 'os';
+import { commentSchema } from './comment';
 
 const postSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
   comments: {
-    type: [
-      {
-        message: String,
-        userId: Schema.Types.ObjectId,
-        createdAt: { type: Date, default: Date.now },
-        updatedAt: Date
-      }
-    ],
-    required: false
+    type: [commentSchema],
+    required: true
   },
-  tags: [{ type: String, required: true }],
+  tags: [{ type: String, required: false }],
   authorId: { type: Schema.Types.ObjectId, required: true },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: Date
+  updatedAt: { type: Date, default: Date.now }
 });
 
 const Post = mongoose.model('Post', postSchema);
