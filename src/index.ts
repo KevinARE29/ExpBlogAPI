@@ -22,7 +22,8 @@ app.use('/posts', postRoutes);
 mongoose
   .connect('mongodb://127.0.0.1/blogapi', {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useFindAndModify: false
   })
   .then(() => console.log('Connected to MongoDB'))
   .catch((err: Error) => console.error('Could not connect to MongoDB', err));
