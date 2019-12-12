@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsMongoId } from 'class-validator';
+import { IsString, IsMongoId } from 'class-validator';
 
 type CommentType = {
   message: string;

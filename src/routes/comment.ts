@@ -1,19 +1,14 @@
 import express from 'express';
-import {
-  createComment,
-  getComment,
-  updateComment,
-  deleteComment
-} from './../controllers/comment';
+import { createComment, getComment, updateComment, deleteComment } from './../controllers/comment';
 
-import { validateSchema } from './../middleware/validator';
+import { validateSchema, validateIds } from './../middleware/validator';
 import { CreateCommentDTO } from '../validators/comment';
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.post('/', validateSchema(CreateCommentDTO), createComment);
-router.get('/:id', getComment);
-router.put('/:id', updateComment);
-router.delete('/:id', deleteComment);
+router.get('/:comment_id', validateIds, getComment);
+router.put('/:comment_id', validateIds, updateComment);
+router.delete('/:comment_id', validateIds, deleteComment);
 
 export default router;
