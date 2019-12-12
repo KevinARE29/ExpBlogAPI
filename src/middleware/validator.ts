@@ -1,19 +1,23 @@
 import express from 'express';
 import { validate, Validator } from 'class-validator';
-import { generateResponse } from '../utils/utils';
+import { ClientError } from '../middleware/errorHandler';
 
 function validateContentType(req: express.Request, res: express.Response, next: Function): void {
-  if (['POST', 'PUT'].includes(req.method) && !req.is('json')) return generateResponse(res, 400);
+  if (['POST', 'PUT'].includes(req.method) && !req.is('json')) {
+    const error = new ClientError(400, 'Content-Type must be application/json');
+    next(error);
+  }
   next();
 }
 
 function validateSchema(SchemaClass: any) {
   return async (req: express.Request, res: express.Response, next: Function): Promise<void> => {
     const schema = new SchemaClass(req.body);
-    console.log('SCHEMA', schema);
     const schemaErrors = await validate(schema);
-
-    if (schemaErrors.length > 0) return generateResponse(res, 400, undefined, schemaErrors);
+    if (schemaErrors.length > 0) {
+      const error = new ClientError(400, 'Bad Request', schemaErrors);
+      next(error);
+    }
     next();
   };
 }
@@ -24,8 +28,8 @@ function validateIds(req: express.Request, res: express.Response, next: Function
   const validator = new Validator();
   for (const id in req.params) {
     if (!validator.isMongoId(req.params[id])) {
-      const err = [`The URL param: ${req.params[id]}, must be a valid MongoId`];
-      return generateResponse(res, 400, undefined, err);
+      const error = new ClientError(400, `The URL param: ${req.params[id]}, must be a valid MongoId`);
+      next(error);
     }
   }
   next();

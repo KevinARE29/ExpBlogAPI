@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import postRoutes from './routes/post';
 import { validateContentType } from './middleware/validator';
+import { handleErrors } from './middleware/errorHandler';
 import { generateResponse } from './utils/utils';
 
 dotenv.config();
@@ -22,6 +23,8 @@ app.use('/posts', postRoutes);
 app.all('*', function(req: express.Request, res: express.Response) {
   generateResponse(res, 404);
 });
+
+app.use(handleErrors);
 
 // *************************************************************
 // ******************   MongoDB    *****************************
