@@ -1,5 +1,6 @@
 import express from 'express';
 import { Post } from './../models/post';
+import { generateResponse } from '../utils/utils';
 
 async function getPosts(req: express.Request, res: express.Response): Promise<void> {
   const posts = await Post.find();
@@ -20,17 +21,17 @@ async function createPost(req: express.Request, res: express.Response): Promise<
 }
 
 async function getPost(req: express.Request, res: express.Response): Promise<void> {
-  const post = await Post.findById(req.params.post_id);
+  const post = await Post.findById(req.params.postId);
   if (!post) return res.status(404).end();
   res.send(post).end();
 }
 
 async function updatePost(req: express.Request, res: express.Response): Promise<void> {
   try {
-    const post = await Post.findByIdAndUpdate(req.params.post_id, req.body, {
+    const post = await Post.findByIdAndUpdate(req.params.postId, req.body, {
       new: true
     });
-    if (!post) return res.status(404).end();
+    if (!post) return generateResponse(res, 404);
     res.send(post).end();
   } catch (error) {
     res
@@ -42,9 +43,9 @@ async function updatePost(req: express.Request, res: express.Response): Promise<
 
 async function deletePost(req: express.Request, res: express.Response): Promise<void> {
   try {
-    const post = await Post.findByIdAndDelete(req.params.post_id);
-    if (!post) return res.status(404).end();
-    res.status(204).end();
+    const post = await Post.findByIdAndDelete(req.params.postId);
+    if (!post) return generateResponse(res, 404);
+    generateResponse(res, 204);
   } catch (error) {
     res
       .status(500)

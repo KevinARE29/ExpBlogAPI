@@ -8,9 +8,10 @@ const router = express.Router();
 
 router.get('/', getPosts);
 router.post('/', validateSchema(CreatePostDTO), createPost);
-router.get('/:post_id', validateIds, getPost);
-router.put('/:post_id', validateIds, validateSchema(UpdatePostDTO), updatePost);
-router.delete('/:post_id', validateIds, deletePost);
+router.get('/:postId', validateIds, getPost);
+router.put('/:postId', validateIds, validateSchema(UpdatePostDTO), updatePost);
+router.delete('/:postId', validateIds, deletePost);
 
-router.use('/:post_id/comments', commentRoutes);
+router.use('/:postId/comments', commentRoutes);
+
 export default router;

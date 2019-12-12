@@ -1,8 +1,9 @@
 import express from 'express';
 import { validate, Validator } from 'class-validator';
+import { generateResponse } from '../utils/utils';
 
 function validateContentType(req: express.Request, res: express.Response, next: Function): void {
-  if (['POST', 'PUT'].includes(req.method) && !req.is('json')) res.sendStatus(400);
+  if (['POST', 'PUT'].includes(req.method) && !req.is('json')) return generateResponse(res, 400);
   next();
 }
 
@@ -10,14 +11,9 @@ function validateSchema(SchemaClass: any) {
   return async (req: express.Request, res: express.Response, next: Function): Promise<void> => {
     const schema = new SchemaClass(req.body);
     console.log('SCHEMA', schema);
-    const result = await validate(schema);
+    const schemaErrors = await validate(schema);
 
-    if (result.length > 0)
-      res
-        .status(400)
-        .send({ errors: result })
-        .end();
-
+    if (schemaErrors.length > 0) return generateResponse(res, 400, undefined, schemaErrors);
     next();
   };
 }
@@ -28,15 +24,8 @@ function validateIds(req: express.Request, res: express.Response, next: Function
   const validator = new Validator();
   for (const id in req.params) {
     if (!validator.isMongoId(req.params[id])) {
-      const err = {
-        status: 400,
-        title: 'Bad Request',
-        message: `The URL param: ${req.params[id]}, must be a valid MongoId`
-      };
-      res
-        .status(400)
-        .send(err)
-        .end();
+      const err = [`The URL param: ${req.params[id]}, must be a valid MongoId`];
+      return generateResponse(res, 400, undefined, err);
     }
   }
   next();

@@ -17,4 +17,13 @@ class CreateCommentDTO {
   }
 }
 
-export { CreateCommentDTO };
+class UpdateCommentDTO {
+  @IsString()
+  message: string;
+
+  constructor({ message }: CommentType) {
+    this.message = message;
+  }
+}
+
+export { CreateCommentDTO, UpdateCommentDTO };
