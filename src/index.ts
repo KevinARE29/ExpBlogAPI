@@ -3,6 +3,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import postRoutes from './routes/post';
 import { validateContentType } from './middleware/validator';
+import { handleErrors } from './middleware/errorHandler';
+import { generateResponse } from './utils/utils';
 
 dotenv.config();
 const app = express();
@@ -14,7 +16,15 @@ const port = 3000;
 
 app.use(validateContentType);
 app.use(express.json());
+
+// For posts and comments endpoints
 app.use('/posts', postRoutes);
+// Another path is a invalid URL
+app.all('*', function(req: express.Request, res: express.Response) {
+  generateResponse(res, 404);
+});
+
+app.use(handleErrors);
 
 // *************************************************************
 // ******************   MongoDB    *****************************

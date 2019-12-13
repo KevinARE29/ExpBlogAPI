@@ -1,56 +1,32 @@
-import express from 'express';
-import { Post } from './../models/post';
+import { Post, PostI } from './../models/post';
+import { PostType } from '../validators/post';
 
-async function getPosts(req: express.Request, res: express.Response) {
+async function getPosts(): Promise<PostI[]> {
   const posts = await Post.find();
-  res.send(posts).end();
+  return posts;
 }
 
-async function createPost(req: express.Request, res: express.Response) {
-  try {
-    const post = new Post(req.body);
-    const newPost = await post.save();
-    res.send(newPost).end();
-  } catch (error) {
-    res
-      .status(500)
-      .send(error)
-      .end();
-  }
+async function createPost(body: PostType): Promise<PostI> {
+  const post = new Post(body);
+  const newPost = await post.save();
+  return newPost;
 }
 
-async function getPost(req: express.Request, res: express.Response) {
-  let post = await Post.findById(req.params.id);
-  if (!post) return res.status(404).end();
-  res.send(post).end();
+async function getPost(postId: string): Promise<PostI | null> {
+  const post = await Post.findById(postId);
+  return post;
 }
 
-async function updatePost(req: express.Request, res: express.Response) {
-  try {
-    let post = await Post.findByIdAndUpdate(req.params.id, req.body, {
-      new: true
-    });
-    if (!post) return res.status(404).end();
-    res.send(post).end();
-  } catch (error) {
-    res
-      .status(500)
-      .send(error)
-      .end();
-  }
+async function updatePost(postId: string, body: PostType): Promise<PostI | null> {
+  const post = await Post.findByIdAndUpdate(postId, body, {
+    new: true
+  });
+  return post;
 }
 
-async function deletePost(req: express.Request, res: express.Response) {
-  try {
-    let post = await Post.findByIdAndDelete(req.params.id);
-    if (!post) return res.status(404).end();
-    res.status(204).end();
-  } catch (error) {
-    res
-      .status(500)
-      .send(error)
-      .end();
-  }
+async function deletePost(postId: string): Promise<PostI | null> {
+  const post = await Post.findByIdAndDelete(postId);
+  return post;
 }
 
 export { getPosts, createPost, getPost, updatePost, deletePost };

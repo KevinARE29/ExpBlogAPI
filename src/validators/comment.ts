@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsMongoId } from 'class-validator';
+import { IsString, IsMongoId } from 'class-validator';
 
 type CommentType = {
   message: string;
@@ -17,4 +17,13 @@ class CreateCommentDTO {
   }
 }
 
-export { CreateCommentDTO };
+class UpdateCommentDTO {
+  @IsString()
+  message: string;
+
+  constructor({ message }: CommentType) {
+    this.message = message;
+  }
+}
+
+export { CreateCommentDTO, UpdateCommentDTO, CommentType };
