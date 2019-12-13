@@ -1,34 +1,45 @@
 import express from 'express';
-import { Post } from './../models/post';
+import { getPosts, createPost, getPost, updatePost, deletePost } from '../services/post';
+import commentRoutes from './comment';
+import { validateSchema, validateIds } from '../middleware/validator';
+import { CreatePostDTO, UpdatePostDTO, PostType } from '../validators/post';
+import { generateResponse } from '../utils/utils';
 
-async function getPosts(req: express.Request, res: express.Response) {
-  const posts = await Post.find();
-  console.log(posts);
-  res.send(posts);
-  res.end();
-}
+const router = express.Router();
 
-async function createPost(req: express.Request, res: express.Response) {
-  try {
-    const post = new Post(req.body);
-    const result = await post.save();
-    res.end();
-  } catch (error) {
-    console.log(error);
-    res.end();
+router.get('/', async (req: express.Request, res: express.Response) => {
+  const posts = await getPosts();
+  res.send(posts).end();
+});
+
+router.post('/', validateSchema(CreatePostDTO), async (req: express.Request, res: express.Response) => {
+  const newPost = await createPost(req.body as PostType);
+  res.send(newPost).end();
+});
+
+router.get('/:postId', validateIds, async (req: express.Request, res: express.Response) => {
+  const post = await getPost(req.params.postId);
+  if (!post) return generateResponse(res, 404);
+  res.send(post).end();
+});
+
+router.put(
+  '/:postId',
+  validateIds,
+  validateSchema(UpdatePostDTO),
+  async (req: express.Request, res: express.Response) => {
+    const post = await updatePost(req.params.postId, req.body as PostType);
+    if (!post) return generateResponse(res, 404);
+    res.send(post).end();
   }
-}
+);
 
-async function getPost(req: express.Request, res: express.Response) {
-  console.log('getPost', req.params.id);
-}
+router.delete('/:postId', validateIds, async (req: express.Request, res: express.Response) => {
+  const post = await deletePost(req.params.postId);
+  if (!post) return generateResponse(res, 404);
+  generateResponse(res, 204);
+});
 
-async function updatePost(req: express.Request, res: express.Response) {
-  console.log('updatePost');
-}
+router.use('/:postId/comments', commentRoutes);
 
-async function deletePost(req: express.Request, res: express.Response) {
-  console.log('deletePost');
-}
-
-export { getPosts, createPost, getPost, updatePost, deletePost };
+export default router;

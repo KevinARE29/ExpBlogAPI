@@ -1,26 +1,28 @@
 import mongoose, { Schema } from 'mongoose';
-import { type } from 'os';
+import { commentSchema, CommentI } from './comment';
+
+interface PostI extends mongoose.Document {
+  title: string;
+  content: string;
+  comments: CommentI[];
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const postSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
   comments: {
-    type: [
-      {
-        message: String,
-        userId: Schema.Types.ObjectId,
-        createdAt: { type: Date, default: Date.now },
-        updatedAt: Date
-      }
-    ],
+    type: [commentSchema],
     required: false
   },
-  tags: [{ type: String, required: true }],
+  tags: [{ type: String, required: false }],
   authorId: { type: Schema.Types.ObjectId, required: true },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: Date
+  updatedAt: { type: Date, default: Date.now }
 });
 
-const Post = mongoose.model('Post', postSchema);
+const Post = mongoose.model<PostI>('Post', postSchema);
 
-export { Post };
+export { Post, PostI };

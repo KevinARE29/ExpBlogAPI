@@ -1,35 +1,38 @@
 import express from 'express';
-import { validate } from 'class-validator';
+import { validate, Validator } from 'class-validator';
+import { ClientError } from '../middleware/errorHandler';
 
-function validateContentType(
-  req: express.Request,
-  res: express.Response,
-  next: Function
-) {
-  if (['POST', 'PUT'].includes(req.method) && !req.is('json'))
-    return res.sendStatus(400);
+function validateContentType(req: express.Request, res: express.Response, next: Function): void {
+  if (['POST', 'PUT'].includes(req.method) && !req.is('json')) {
+    const error = new ClientError(400, 'Content-Type must be application/json');
+    next(error);
+  }
   next();
 }
 
 function validateSchema(SchemaClass: any) {
-  return async (
-    req: express.Request,
-    res: express.Response,
-    next: Function
-  ) => {
+  return async (req: express.Request, res: express.Response, next: Function): Promise<void> => {
     const schema = new SchemaClass(req.body);
-    console.log(schema);
-    const result = await validate(schema);
-
-    if (result.length > 0) {
-      return res
-        .status(400)
-        .send({ errors: result })
-        .end();
+    const schemaErrors = await validate(schema);
+    if (schemaErrors.length > 0) {
+      const error = new ClientError(400, 'Bad Request', schemaErrors);
+      next(error);
     }
-
     next();
   };
 }
 
-export { validateContentType, validateSchema };
+// This function validates query.params in routes like: path/:id/path2/:id2 in which,
+// all params must be ObjectId of MongoDB
+function validateIds(req: express.Request, res: express.Response, next: Function): void {
+  const validator = new Validator();
+  for (const id in req.params) {
+    if (!validator.isMongoId(req.params[id])) {
+      const error = new ClientError(400, `The URL param: ${req.params[id]}, must be a valid MongoId`);
+      next(error);
+    }
+  }
+  next();
+}
+
+export { validateContentType, validateSchema, validateIds };
