@@ -1,28 +1,45 @@
-import { PostI } from './../models/post';
-import { Comment, CommentI } from './../models/comment';
-import { CommentType } from './../validators/comment';
+import express from 'express';
+import { createComment, getComment, updateComment, deleteComment } from '../services/comment';
+import { getPost } from '../services/post';
+import { validateSchema, validateIds } from '../middleware/validator';
+import { CreateCommentDTO, UpdateCommentDTO, CommentType } from '../validators/comment';
+import { generateResponse } from '../utils/utils';
 
-async function createComment(post: PostI, body: CommentType): Promise<CommentI> {
-  const comment = new Comment(body);
-  post.comments.push(comment);
-  await post.save();
-  return comment;
-}
+const router = express.Router({ mergeParams: true });
 
-async function getComment(post: PostI, commentId: string): Promise<CommentI | undefined> {
-  const comment = post.comments.find(comment => String(comment._id) === commentId);
-  return comment;
-}
+router.post('/', validateIds, validateSchema(CreateCommentDTO), async (req: express.Request, res: express.Response) => {
+  const post = await getPost(req.params.postId);
+  if (!post) return generateResponse(res, 404);
+  const comment = await createComment(post, req.body as CommentType);
+  res.send(comment).end();
+});
+router.get('/:commentId', validateIds, async (req: express.Request, res: express.Response) => {
+  const post = await getPost(req.params.postId);
+  if (!post) return generateResponse(res, 404);
+  const comment = await getComment(post, req.params.commentId);
+  if (!comment) return generateResponse(res, 404);
+  res.send(comment).end();
+});
+router.put(
+  '/:commentId',
+  validateIds,
+  validateSchema(UpdateCommentDTO),
+  async (req: express.Request, res: express.Response) => {
+    const post = await getPost(req.params.postId);
+    if (!post) return generateResponse(res, 404);
+    const comment = await getComment(post, req.params.commentId);
+    if (!comment) return generateResponse(res, 404);
+    await updateComment(post, comment, req.body.message);
+    res.send(comment).end();
+  }
+);
+router.delete('/:commentId', validateIds, async (req: express.Request, res: express.Response) => {
+  const post = await getPost(req.params.postId);
+  if (!post) return res.status(404).end();
+  const comment = await getComment(post, req.params.commentId);
+  if (!comment) return generateResponse(res, 404);
+  await deleteComment(post, comment);
+  res.status(204).end();
+});
 
-async function updateComment(post: PostI, comment: CommentI, message: string): Promise<void> {
-  comment.set({ message: message });
-  await post.save();
-  return;
-}
-
-async function deleteComment(post: PostI, comment: CommentI): Promise<void> {
-  comment.remove();
-  await post.save();
-}
-
-export { createComment, getComment, updateComment, deleteComment };
+export default router;
