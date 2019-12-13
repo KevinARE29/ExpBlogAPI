@@ -26,4 +26,4 @@ class UpdateCommentDTO {
   }
 }
 
-export { CreateCommentDTO, UpdateCommentDTO };
+export { CreateCommentDTO, UpdateCommentDTO, CommentType };

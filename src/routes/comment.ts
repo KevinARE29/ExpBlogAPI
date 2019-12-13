@@ -2,7 +2,7 @@ import express from 'express';
 import { createComment, getComment, updateComment, deleteComment } from './../controllers/comment';
 import { getPost } from './../controllers/post';
 import { validateSchema, validateIds } from './../middleware/validator';
-import { CreateCommentDTO, UpdateCommentDTO } from '../validators/comment';
+import { CreateCommentDTO, UpdateCommentDTO, CommentType } from '../validators/comment';
 import { generateResponse } from '../utils/utils';
 
 const router = express.Router({ mergeParams: true });
@@ -10,7 +10,7 @@ const router = express.Router({ mergeParams: true });
 router.post('/', validateIds, validateSchema(CreateCommentDTO), async (req: express.Request, res: express.Response) => {
   const post = await getPost(req.params.postId);
   if (!post) return generateResponse(res, 404);
-  const comment = await createComment(post, req.body);
+  const comment = await createComment(post, req.body as CommentType);
   res.send(comment).end();
 });
 router.get('/:commentId', validateIds, async (req: express.Request, res: express.Response) => {
@@ -26,7 +26,7 @@ router.put(
   validateSchema(UpdateCommentDTO),
   async (req: express.Request, res: express.Response) => {
     const post = await getPost(req.params.postId);
-    if (!post) return res.status(404).end();
+    if (!post) return generateResponse(res, 404);
     const comment = await getComment(post, req.params.commentId);
     if (!comment) return generateResponse(res, 404);
     await updateComment(post, comment, req.body.message);

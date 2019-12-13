@@ -1,8 +1,8 @@
-import express from 'express';
-import { Post, PostI } from './../models/post';
+import { PostI } from './../models/post';
 import { Comment, CommentI } from './../models/comment';
+import { CommentType } from './../validators/comment';
 
-async function createComment(post: PostI, body: any): Promise<CommentI> {
+async function createComment(post: PostI, body: CommentType): Promise<CommentI> {
   const comment = new Comment(body);
   post.comments.push(comment);
   await post.save();

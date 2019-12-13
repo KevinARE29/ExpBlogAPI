@@ -47,4 +47,4 @@ class UpdatePostDTO {
   }
 }
 
-export { CreatePostDTO, UpdatePostDTO };
+export { CreatePostDTO, UpdatePostDTO, PostType };
