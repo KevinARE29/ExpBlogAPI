@@ -1,42 +1,28 @@
 import express from 'express';
-import { Post } from './../models/post';
-import { Comment } from './../models/comment';
+import { Post, PostI } from './../models/post';
+import { Comment, CommentI } from './../models/comment';
 
-async function createComment(req: express.Request, res: express.Response): Promise<void> {
-  const post = await Post.findById(req.params.postId);
-  if (!post) return res.status(404).end();
-  const comment = new Comment(req.body);
+async function createComment(post: PostI, body: any): Promise<CommentI> {
+  const comment = new Comment(body);
   post.comments.push(comment);
   await post.save();
-  return res.send(comment).end();
+  return comment;
 }
 
-async function getComment(req: express.Request, res: express.Response): Promise<void> {
-  const post = await Post.findById(req.params.postId);
-  if (!post) return res.status(404).end();
-  const comment = post.comments.find(comment => String(comment._id) === req.params.commentId);
-  if (!comment) return res.status(404).end();
-  return res.send(comment).end();
+async function getComment(post: PostI, commentId: string): Promise<CommentI | undefined> {
+  const comment = post.comments.find(comment => String(comment._id) === commentId);
+  return comment;
 }
 
-async function updateComment(req: express.Request, res: express.Response): Promise<void> {
-  const post = await Post.findById(req.params.postId);
-  if (!post) return res.status(404).end();
-  const comment = post.comments.find(comment => String(comment._id) === req.params.commentId);
-  if (!comment) return res.status(404).end();
-  comment.set({ message: req.body.message });
+async function updateComment(post: PostI, comment: CommentI, message: string): Promise<void> {
+  comment.set({ message: message });
   await post.save();
-  return res.send(comment).end();
+  return;
 }
 
-async function deleteComment(req: express.Request, res: express.Response): Promise<void> {
-  const post = await Post.findById(req.params.postId);
-  if (!post) return res.status(404).end();
-  const comment = post.comments.find(comment => String(comment._id) === req.params.commentId);
-  if (!comment) return res.status(404).end();
+async function deleteComment(post: PostI, comment: CommentI): Promise<void> {
   comment.remove();
   await post.save();
-  return res.status(204).end();
 }
 
 export { createComment, getComment, updateComment, deleteComment };
